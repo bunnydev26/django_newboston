@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.template import loader
-from .models import Album
+from .models import Album, Song
 
 
 # Create your views here.
@@ -21,3 +21,17 @@ def detail(request, album_id):
     album = get_object_or_404(Album, id=album_id)
 
     return render(request, 'music/detail.html', {'album' : album})
+
+def favorite(request, album_id):
+    album = get_object_or_404(Album, pk=album_id)
+    song_id = request.POST['song']
+    error_message = None
+    try:
+        song = album.song_set.get(pk=song_id)
+    except (KeyError, Song.DoesNotExist):
+        error_message = 'You didnot select a valid song'
+    else:
+        song.is_favorite = True
+        song.save()
+
+    return render(request, 'music/detail.html', {'album': album, 'error_message':error_message})
